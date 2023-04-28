@@ -20,6 +20,7 @@
 #include "kuromoji/tokenattributes/PartOfSpeechAttribute.h"
 #include "kuromoji/tokenattributes/ReadingAttribute.h"
 
+#include <iostream>
 #include <thread>
 
 namespace Lucene {
