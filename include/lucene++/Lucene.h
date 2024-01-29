@@ -97,28 +97,26 @@ typedef Array<double> DoubleArray;
 
 template <class TYPE>
 struct luceneEquals {
-    inline bool operator()(const TYPE& first, const TYPE& second) const {
-        return first ? first->equals(second) : (!first && !second);
-    }
+	inline bool operator()(const TYPE& first, const TYPE& second) const { return first ? first->equals(second) : (!first && !second); }
 };
 
 template <class TYPE>
 struct luceneEqualTo {
-    luceneEqualTo(const TYPE& type) : equalType(type) {}
-    inline bool operator()(const TYPE& other) const {
-        return equalType->equals(other);
-    }
-    const TYPE& equalType;
+	luceneEqualTo(const TYPE& type) : equalType(type) {}
+	inline bool operator()(const TYPE& other) const { return equalType->equals(other); }
+	const TYPE& equalType;
 };
 
 template <class TYPE>
 struct luceneWeakEquals {
-    inline bool operator()(const TYPE& first, const TYPE& second) const {
-        if (first.expired() || second.expired()) {
-            return (first.expired() && second.expired());
-        }
-        return first.lock()->equals(second.lock());
-    }
+	inline bool operator()(const TYPE& first, const TYPE& second) const
+	{
+		if (first.expired() || second.expired())
+		{
+			return (first.expired() && second.expired());
+		}
+		return first.lock()->equals(second.lock());
+	}
 };
 
 template <class TYPE>
@@ -137,15 +135,18 @@ struct luceneWeakHash {
 
 template <class TYPE>
 struct luceneCompare {
-    inline bool operator()(const TYPE& first, const TYPE& second) const {
-        if (!second) {
-            return false;
-        }
-        if (!first) {
-            return true;
-        }
-        return (first->compareTo(second) < 0);
-    }
+	inline bool operator()(const TYPE& first, const TYPE& second) const
+	{
+		if (!second)
+		{
+			return false;
+		}
+		if (!first)
+		{
+			return true;
+		}
+		return (first->compareTo(second) < 0);
+	}
 };
 
 typedef boost::blank VariantNull;
@@ -212,6 +213,8 @@ typedef boost::function<bool (const TermVectorEntryPtr&, const TermVectorEntryPt
 template < class KEY, class VALUE, class HASH = boost::hash<KEY>, class EQUAL = std::equal_to<KEY> > class SimpleLRUCache;
 typedef SimpleLRUCache< TermPtr, TermInfoPtr, luceneHash<TermPtr>, luceneEquals<TermPtr> > TermInfoCache;
 typedef boost::shared_ptr<TermInfoCache> TermInfoCachePtr;
+
+typedef boost::shared_ptr<long> Long;
 }
 
 #include "Synchronize.h"
