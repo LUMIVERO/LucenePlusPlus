@@ -59,9 +59,9 @@ BrazilianAnalyzer::~BrazilianAnalyzer() {
 
 const HashSet<String> BrazilianAnalyzer::getDefaultStopSet() {
     static HashSet<String> stopSet;
-    LUCENE_RUN_ONCE(
+    if (!stopSet) {
         stopSet = HashSet<String>::newInstance(_BRAZILIAN_STOP_WORDS, _BRAZILIAN_STOP_WORDS + SIZEOF_ARRAY(_BRAZILIAN_STOP_WORDS));
-    );
+    }
     return stopSet;
 }
 

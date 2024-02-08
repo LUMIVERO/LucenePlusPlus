@@ -11,7 +11,7 @@
 
 namespace Lucene {
 
-class LPPAPI SegmentTermPositions : public SegmentTermDocs {
+class SegmentTermPositions : public SegmentTermDocs {
 public:
     SegmentTermPositions(const SegmentReaderPtr& parent);
     virtual ~SegmentTermPositions();
@@ -46,7 +46,7 @@ public:
     virtual bool next();
 
     /// Not supported
-    virtual int32_t read(Collection<int32_t>& docs, Collection<int32_t>& freqs);
+    virtual int32_t read(Collection<int32_t> docs, Collection<int32_t> freqs);
 
     /// Returns the length of the payload at the current term position.
     virtual int32_t getPayloadLength();

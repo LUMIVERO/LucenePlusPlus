@@ -19,10 +19,10 @@ bool DocIdSet::isCacheable() {
 
 DocIdSetPtr DocIdSet::EMPTY_DOCIDSET() {
     static DocIdSetPtr _EMPTY_DOCIDSET;
-    LUCENE_RUN_ONCE(
+    if (!_EMPTY_DOCIDSET) {
         _EMPTY_DOCIDSET = newLucene<EmptyDocIdSet>();
         CycleCheck::addStatic(_EMPTY_DOCIDSET);
-    );
+    }
     return _EMPTY_DOCIDSET;
 }
 

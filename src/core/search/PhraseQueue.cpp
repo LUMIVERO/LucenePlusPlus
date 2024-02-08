@@ -10,27 +10,24 @@
 
 namespace Lucene {
 
-PhraseQueue::PhraseQueue(int32_t size) : PriorityQueue<PhrasePositionsStar>(size) {
+PhraseQueue::PhraseQueue(int32_t size) : PriorityQueue<PhrasePositionsPtr>(size) {
 }
 
 PhraseQueue::~PhraseQueue() {
 }
 
-inline bool PhraseQueue::lessThan(const PhrasePositionsStar& first, const PhrasePositionsStar& second) {
-    if (first && second) {
-        if (first->doc == second->doc) {
-            if (first->position == second->position) {
-                // same doc and pp.position, so decide by actual term positions.
-                // rely on: pp.position == tp.position - offset.
-                return first->offset < second->offset;
-            } else {
-                return first->position < second->position;
-            }
+bool PhraseQueue::lessThan(const PhrasePositionsPtr& first, const PhrasePositionsPtr& second) {
+    if (first->doc == second->doc) {
+        if (first->position == second->position) {
+            // same doc and pp.position, so decide by actual term positions.
+            // rely on: pp.position == tp.position - offset.
+            return first->offset < second->offset;
         } else {
-            return first->doc < second->doc;
+            return first->position < second->position;
         }
+    } else {
+        return first->doc < second->doc;
     }
-    return first ? false : true;
 }
 
 }

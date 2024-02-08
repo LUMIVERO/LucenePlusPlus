@@ -89,11 +89,11 @@ ArabicAnalyzer::~ArabicAnalyzer() {
 
 const HashSet<String> ArabicAnalyzer::getDefaultStopSet() {
     static HashSet<String> stopSet;
-    LUCENE_RUN_ONCE(
+    if (!stopSet) {
         String stopWords(UTF8_TO_STRING(DEFAULT_STOPWORD_FILE));
         Collection<String> words(StringUtils::split(stopWords, L"\n"));
         stopSet = HashSet<String>::newInstance(words.begin(), words.end());
-    );
+    }
     return stopSet;
 }
 

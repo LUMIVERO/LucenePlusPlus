@@ -6,16 +6,12 @@
 
 #include "LuceneInc.h"
 #include "LuceneException.h"
-#include "StringUtils.h"
 
 namespace Lucene {
 
 LuceneException::LuceneException(const String& error, ExceptionType type) throw() {
     this->error = error;
     this->type = type;
-    SingleStringStream ss;
-    ss << "LuceneException[" << type << "]: " << StringUtils::toUTF8(error);
-    this->_what = ss.str();
 }
 
 LuceneException::~LuceneException() throw() {
@@ -93,11 +89,6 @@ void LuceneException::throwException() {
         // silence static analyzer
         break;
     }
-}
-
-const char* LuceneException::what() const throw()
-{
-    return _what.c_str();
 }
 
 }

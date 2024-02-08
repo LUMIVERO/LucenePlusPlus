@@ -12,7 +12,7 @@
 namespace Lucene {
 
 /// A Scorer for documents matching a Term.
-class LPPAPI TermScorer : public Scorer {
+class TermScorer : public Scorer {
 public:
     /// Construct a TermScorer.
     /// @param weight The weight of the Term in the query.
@@ -27,25 +27,18 @@ public:
 
 protected:
     WeightPtr weight;
-    TermDocsPtr termDocs; // for malloc and free
-    TermDocs* __termDocs; // for work,   
+    TermDocsPtr termDocs;
     ByteArray norms;
     double weightValue;
     int32_t doc;
 
     Collection<int32_t> docs; // buffered doc numbers
-    decltype(docs.get()) __docs; // 
     Collection<int32_t> freqs; // buffered term freqs
-    decltype(freqs.get()) __freqs; // 
-    
-    int32_t freq;
     int32_t pointer;
     int32_t pointerMax;
 
     static const int32_t SCORE_CACHE_SIZE;
     Collection<double> scoreCache;
-    
-    
 
 public:
     virtual void score(const CollectorPtr& collector);
@@ -67,13 +60,9 @@ public:
 
     /// Returns a string representation of this TermScorer.
     virtual String toString();
-    
-    virtual float termFreq(){
-        return freq;
-    }
 
 protected:
-    static const Collection<double>& SIM_NORM_DECODER();
+    static const Collection<double> SIM_NORM_DECODER();
 
     virtual bool score(const CollectorPtr& collector, int32_t max, int32_t firstDocID);
 };

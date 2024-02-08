@@ -52,19 +52,15 @@ protected:
     ExceptionType type;
     String error;
 
-    std::string _what;
-
 public:
     ExceptionType getType() const;
     String getError() const;
     bool isNull() const;
     void throwException();
-
-    virtual const char* what() const throw();
 };
 
 template <class ParentException, LuceneException::ExceptionType Type>
-class LPPAPI ExceptionTemplate : public ParentException {
+class ExceptionTemplate : public ParentException {
 public:
     ExceptionTemplate(const String& error = EmptyString, LuceneException::ExceptionType type = Type) : ParentException(error, type) {
     }

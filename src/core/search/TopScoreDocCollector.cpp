@@ -60,7 +60,6 @@ void TopScoreDocCollector::setNextReader(const IndexReaderPtr& reader, int32_t d
 
 void TopScoreDocCollector::setScorer(const ScorerPtr& scorer) {
     this->_scorer = scorer;
-    this->__scorer = scorer.get();
 }
 
 InOrderTopScoreDocCollector::InOrderTopScoreDocCollector(int32_t numHits) : TopScoreDocCollector(numHits) {
@@ -70,7 +69,7 @@ InOrderTopScoreDocCollector::~InOrderTopScoreDocCollector() {
 }
 
 void InOrderTopScoreDocCollector::collect(int32_t doc) {
-    double score = __scorer->score();
+    double score = ScorerPtr(_scorer)->score();
 
     // This collector cannot handle these scores
     BOOST_ASSERT(score != -std::numeric_limits<double>::infinity());
@@ -99,7 +98,7 @@ OutOfOrderTopScoreDocCollector::~OutOfOrderTopScoreDocCollector() {
 }
 
 void OutOfOrderTopScoreDocCollector::collect(int32_t doc) {
-    double score = __scorer->score();
+    double score = ScorerPtr(_scorer)->score();
 
     // This collector cannot handle NaN
     BOOST_ASSERT(!MiscUtils::isNaN(score));

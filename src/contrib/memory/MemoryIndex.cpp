@@ -214,10 +214,10 @@ MemoryIndexReader::~MemoryIndexReader() {
 
 TermPtr MemoryIndexReader::MATCH_ALL_TERM() {
     static TermPtr _MATCH_ALL_TERM;
-    LUCENE_RUN_ONCE(
+    if (!_MATCH_ALL_TERM) {
         _MATCH_ALL_TERM = newLucene<Term>(L"");
         CycleCheck::addStatic(_MATCH_ALL_TERM);
-    );
+    }
     return _MATCH_ALL_TERM;
 }
 
@@ -416,9 +416,9 @@ void MemoryIndexReader::doClose() {
 
 HashSet<String> MemoryIndexReader::getFieldNames(FieldOption fieldOption) {
     static HashSet<String> emptySet;
-    LUCENE_RUN_ONCE(
+    if (!emptySet) {
         emptySet = HashSet<String>::newInstance();
-    );
+    }
     if (fieldOption == FIELD_OPTION_UNINDEXED) {
         return emptySet;
     }
@@ -569,7 +569,7 @@ bool MemoryIndexTermPositions::next() {
     return _next;
 }
 
-int32_t MemoryIndexTermPositions::read(Collection<int32_t>& docs, Collection<int32_t>& freqs) {
+int32_t MemoryIndexTermPositions::read(Collection<int32_t> docs, Collection<int32_t> freqs) {
     if (!hasNext) {
         return 0;
     }

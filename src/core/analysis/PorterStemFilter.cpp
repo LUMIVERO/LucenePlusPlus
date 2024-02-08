@@ -24,7 +24,7 @@ bool PorterStemFilter::incrementToken() {
         return false;
     }
 
-    if (stemmer->stem(termAtt->termBufferArray(), termAtt->termLength() - 1)) {
+    if (stemmer->stem(termAtt->termBuffer())) {
         termAtt->setTermBuffer(stemmer->getResultBuffer(), 0, stemmer->getResultLength());
     }
     return true;

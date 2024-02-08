@@ -65,7 +65,6 @@ bool ChineseTokenizer::incrementToken() {
 
     length = 0;
     start = offset;
-    bool last_is_en = false, last_is_num = false;
 
     while (true) {
         wchar_t c;
@@ -83,30 +82,11 @@ bool ChineseTokenizer::incrementToken() {
             c = ioBuffer[bufferIndex++];
         }
 
-        if (UnicodeUtil::isLower(c) || UnicodeUtil::isUpper(c)) {
-            if (last_is_num) {
-                --bufferIndex;
-                --offset;
-                return flush();
-            }
-
+        if (UnicodeUtil::isDigit(c) || UnicodeUtil::isLower(c) || UnicodeUtil::isUpper(c)) {
             push(c);
             if (length == MAX_WORD_LEN) {
                 return flush();
             }
-            last_is_en = true;
-        } else if (UnicodeUtil::isDigit(c)) {
-            if (last_is_en) {
-                --bufferIndex;
-                --offset;
-                return flush();
-            }
-
-            push(c);
-            if (length == MAX_WORD_LEN) {
-                return flush();
-            }
-            last_is_num = true;
         } else if (UnicodeUtil::isOther(c)) {
             if (length > 0) {
                 --bufferIndex;

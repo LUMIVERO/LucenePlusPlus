@@ -11,7 +11,7 @@
 
 namespace Lucene {
 
-class LPPAPI SegmentTermEnum : public TermEnum {
+class SegmentTermEnum : public TermEnum {
 public:
     SegmentTermEnum();
     SegmentTermEnum(const IndexInputPtr& i, const FieldInfosPtr& fis, bool isi);

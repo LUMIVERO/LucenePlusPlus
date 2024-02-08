@@ -16,7 +16,7 @@
 namespace Lucene {
 
 /// An IndexReader which reads indexes with multiple segments.
-class LPPAPI DirectoryReader : public IndexReader {
+class DirectoryReader : public IndexReader {
 public:
     /// Construct reading the named set of readers.
     DirectoryReader(const DirectoryPtr& directory, const SegmentInfosPtr& sis, const IndexDeletionPolicyPtr& deletionPolicy, bool readOnly, int32_t termInfosIndexDivisor);
@@ -262,7 +262,7 @@ public:
 
     /// Attempts to read multiple entries from the enumeration, up to length of docs.
     /// Optimized implementation.
-    virtual int32_t read(Collection<int32_t>& docs, Collection<int32_t>& freqs);
+    virtual int32_t read(Collection<int32_t> docs, Collection<int32_t> freqs);
 
     /// Skips entries to the first beyond the current whose document number is greater than or equal to target.
     virtual bool skipTo(int32_t target);

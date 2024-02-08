@@ -11,7 +11,7 @@
 
 namespace Lucene {
 
-class LPPAPI TermVectorsReader : public LuceneObject {
+class TermVectorsReader : public LuceneObject {
 public:
     TermVectorsReader();
     TermVectorsReader(const DirectoryPtr& d, const String& segment, const FieldInfosPtr& fieldInfos);

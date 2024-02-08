@@ -34,9 +34,9 @@ void CycleCheck::addRef(const String& className, int32_t ref) {
 
 void CycleCheck::addStatic(LuceneObjectPtr* staticRef) {
 #ifdef LPP_USE_CYCLIC_CHECK
-    LUCENE_RUN_ONCE(
+    if (!staticRefs) {
         staticRefs = Set<LuceneObjectPtr*>::newInstance();
-    );
+    }
     staticRefs.add(staticRef);
 #endif
 }

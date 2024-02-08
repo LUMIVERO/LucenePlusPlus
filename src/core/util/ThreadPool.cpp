@@ -28,10 +28,10 @@ ThreadPool::~ThreadPool() {
 
 ThreadPoolPtr ThreadPool::getInstance() {
     static ThreadPoolPtr threadPool;
-    LUCENE_RUN_ONCE(
+    if (!threadPool) {
         threadPool = newLucene<ThreadPool>();
         CycleCheck::addStatic(threadPool);
-    );
+    }
     return threadPool;
 }
 

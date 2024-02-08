@@ -67,10 +67,9 @@ ConjunctionScorer::~ConjunctionScorer() {
 int32_t ConjunctionScorer::doNext() {
     int32_t first = 0;
     int32_t doc = scorers[scorers.size() - 1]->docID();
-    Scorer* __firstScorer;
-    // TODO: __firstScore nullptr ??
-    while ((__firstScorer = scorers[first].get())->docID() < doc) {
-        doc = __firstScorer->advance(doc);
+    ScorerPtr firstScorer;
+    while ((firstScorer = scorers[first])->docID() < doc) {
+        doc = firstScorer->advance(doc);
         first = first == scorers.size() - 1 ? 0 : first + 1;
     }
     return doc;
@@ -79,16 +78,14 @@ int32_t ConjunctionScorer::doNext() {
 int32_t ConjunctionScorer::advance(int32_t target) {
     if (lastDoc == NO_MORE_DOCS) {
         return lastDoc;
-    } 
-    auto& scorer = scorers[(scorers.size() - 1)];
-    if (scorer->docID() < target) {
-        scorer->advance(target);
+    } else if (scorers[(scorers.size() - 1)]->docID() < target) {
+        scorers[(scorers.size() - 1)]->advance(target);
     }
     lastDoc = doNext();
     return lastDoc;
 }
 
-inline int32_t ConjunctionScorer::docID() {
+int32_t ConjunctionScorer::docID() {
     return lastDoc;
 }
 
@@ -106,8 +103,8 @@ int32_t ConjunctionScorer::nextDoc() {
 
 double ConjunctionScorer::score() {
     double sum = 0.0;
-    for (auto& scorer : scorers){
-        sum += scorer->score();
+    for (Collection<ScorerPtr>::iterator scorer = scorers.begin(); scorer != scorers.end(); ++scorer) {
+        sum += (*scorer)->score();
     }
     return sum * coord;
 }

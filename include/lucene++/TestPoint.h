@@ -12,7 +12,7 @@
 namespace Lucene {
 
 /// Used for unit testing as a substitute for stack trace
-class LPPAPI TestPoint {
+class TestPoint {
 public:
     virtual ~TestPoint();
 
@@ -28,7 +28,7 @@ public:
     static bool getTestPoint(const String& method);
 };
 
-class LPPAPI TestScope {
+class TestScope {
 public:
     TestScope(const String& object, const String& method);
     virtual ~TestScope();

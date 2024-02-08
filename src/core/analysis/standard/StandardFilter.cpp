@@ -22,21 +22,17 @@ StandardFilter::~StandardFilter() {
 
 const String& StandardFilter::APOSTROPHE_TYPE() {
     static String _APOSTROPHE_TYPE;
-    
-    LUCENE_RUN_ONCE(
+    if (_APOSTROPHE_TYPE.empty()) {
         _APOSTROPHE_TYPE = StandardTokenizer::TOKEN_TYPES()[StandardTokenizer::APOSTROPHE];
-    );
-    
+    }
     return _APOSTROPHE_TYPE;
 }
 
 const String& StandardFilter::ACRONYM_TYPE() {
     static String _ACRONYM_TYPE;
-
-    LUCENE_RUN_ONCE(
-        _ACRONYM_TYPE = StandardTokenizer::TOKEN_TYPES()[StandardTokenizer::ACRONYM]
-    );
-    
+    if (_ACRONYM_TYPE.empty()) {
+        _ACRONYM_TYPE = StandardTokenizer::TOKEN_TYPES()[StandardTokenizer::ACRONYM];
+    }
     return _ACRONYM_TYPE;
 }
 

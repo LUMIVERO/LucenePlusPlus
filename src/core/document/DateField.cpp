@@ -16,28 +16,27 @@ DateField::~DateField() {
 
 int32_t DateField::DATE_LEN() {
     static int32_t _DATE_LEN = 0;
-
-    // make date strings long enough to last a millennium
-    LUCENE_RUN_ONCE(
+    if (_DATE_LEN == 0) {
+        // make date strings long enough to last a millennium
         _DATE_LEN = (int32_t)StringUtils::toString((int64_t)(1000 * 365 * 24) * (int64_t)(60 * 60 * 1000), StringUtils::CHARACTER_MAX_RADIX).length();
-    );
+    }
     return _DATE_LEN;
 }
 
 const String& DateField::MIN_DATE_STRING() {
     static String _MIN_DATE_STRING;
-    LUCENE_RUN_ONCE(
+    if (_MIN_DATE_STRING.empty()) {
         _MIN_DATE_STRING = timeToString(0);
-    );
+    }
     return _MIN_DATE_STRING;
 }
 
 const String& DateField::MAX_DATE_STRING() {
     static String _MAX_DATE_STRING;
-    LUCENE_RUN_ONCE(
+    if (_MAX_DATE_STRING.empty()) {
         _MAX_DATE_STRING.resize(DATE_LEN());
         std::fill(_MAX_DATE_STRING.begin(), _MAX_DATE_STRING.end(), L'z');
-    );
+    }
     return _MAX_DATE_STRING;
 }
 

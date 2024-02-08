@@ -27,25 +27,23 @@ PhraseScorer::PhraseScorer(const WeightPtr& weight, Collection<TermPositionsPtr>
     // This allows to easily identify a matching (exact) phrase when all PhrasePositions have exactly the same position.
     for (int32_t i = 0; i < tps.size(); ++i) {
         PhrasePositionsPtr pp(newLucene<PhrasePositions>(tps[i], offsets[i]));
-        auto* __pp = pp.get();
-        if (__last) { // add next to end of list
-            __last->__next = __pp;
+        if (last) { // add next to end of list
+            last->_next = pp;
         } else {
-            __first = __pp;
+            first = pp;
         }
-        __last = __pp;
-        _holds.emplace_back(pp);
+        last = pp;
     }
 
     pq = newLucene<PhraseQueue>(tps.size()); // construct empty pq
-    __first->doc = -1;
+    first->doc = -1;
 }
 
 PhraseScorer::~PhraseScorer() {
 }
 
 int32_t PhraseScorer::docID() {
-    return __first->doc;
+    return first->doc;
 }
 
 int32_t PhraseScorer::nextDoc() {
@@ -53,18 +51,18 @@ int32_t PhraseScorer::nextDoc() {
         init();
         firstTime = false;
     } else if (more) {
-        more = __last->next();    // trigger further scanning
+        more = last->next();    // trigger further scanning
     }
     if (!doNext()) {
-        __first->doc = NO_MORE_DOCS;
+        first->doc = NO_MORE_DOCS;
     }
-    return __first->doc;
+    return first->doc;
 }
 
 bool PhraseScorer::doNext() {
     while (more) {
-        while (more && __first->doc < __last->doc) { // find doc with all the terms
-            more = __first->skipTo(__last->doc); // skip first upto last and move it to the end
+        while (more && first->doc < last->doc) { // find doc with all the terms
+            more = first->skipTo(last->doc); // skip first upto last and move it to the end
             firstToLast();
         }
 
@@ -72,7 +70,7 @@ bool PhraseScorer::doNext() {
             // found a doc with all of the terms
             freq = phraseFreq(); // check for phrase
             if (freq == 0.0) { // no match
-                more = __last->next();    // trigger further scanning
+                more = last->next();    // trigger further scanning
             } else {
                 return true;
             }
@@ -83,21 +81,21 @@ bool PhraseScorer::doNext() {
 
 double PhraseScorer::score() {
     double raw = getSimilarity()->tf(freq) * value; // raw score
-    return !norms ? raw : raw * Similarity::decodeNorm(norms[__first->doc]); // normalize
+    return !norms ? raw : raw * Similarity::decodeNorm(norms[first->doc]); // normalize
 }
 
 int32_t PhraseScorer::advance(int32_t target) {
     firstTime = false;
-    for (auto* __pp = __first; more && __pp; __pp = __pp->__next) {
-        more = __pp->skipTo(target);
+    for (PhrasePositionsPtr pp(first); more && pp; pp = pp->_next) {
+        more = pp->skipTo(target);
     }
     if (more) {
         sort();    // re-sort
     }
     if (!doNext()) {
-        __first->doc = NO_MORE_DOCS;
+        first->doc = NO_MORE_DOCS;
     }
-    return __first->doc;
+    return first->doc;
 }
 
 double PhraseScorer::currentFreq() {
@@ -105,8 +103,8 @@ double PhraseScorer::currentFreq() {
 }
 
 void PhraseScorer::init() {
-    for (auto* __pp = __first; more && __pp; __pp = __pp->__next) {
-        more = __pp->next();
+    for (PhrasePositionsPtr pp(first); more && pp; pp = pp->_next) {
+        more = pp->next();
     }
     if (more) {
         sort();
@@ -115,32 +113,32 @@ void PhraseScorer::init() {
 
 void PhraseScorer::sort() {
     pq->clear();
-    for (auto* __pp = __first; more && __pp; __pp = __pp->__next) {
-        pq->add(__pp);
+    for (PhrasePositionsPtr pp(first); more && pp; pp = pp->_next) {
+        pq->add(pp);
     }
     pqToList();
 }
 
 void PhraseScorer::pqToList() {
-    __last = nullptr;
-    __first = nullptr;
+    last.reset();
+    first.reset();
     while (pq->top()) {
-        auto* __pp = pq->pop();
-        if (__last) { // add next to end of list
-            __last->__next = __pp;
+        PhrasePositionsPtr pp(pq->pop());
+        if (last) { // add next to end of list
+            last->_next = pp;
         } else {
-            __first = __pp;
+            first = pp;
         }
-        __last = __pp;
-        __pp->__next = nullptr;
+        last = pp;
+        pp->_next.reset();
     }
 }
 
 void PhraseScorer::firstToLast() {
-    __last->__next = __first; // move first to end of list
-    __last = __first;
-    __first = __first->__next;
-    __last->__next = nullptr;
+    last->_next = first; // move first to end of list
+    last = first;
+    first = first->_next;
+    last->_next.reset();
 }
 
 String PhraseScorer::toString() {

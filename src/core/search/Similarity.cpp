@@ -25,34 +25,31 @@ Similarity::~Similarity() {
 }
 
 SimilarityPtr Similarity::getDefault() {
-	// race condition?
     static SimilarityPtr defaultImpl;
-    LUCENE_RUN_ONCE(
+    if (!defaultImpl) {
         defaultImpl = newLucene<DefaultSimilarity>();
         CycleCheck::addStatic(defaultImpl);
-    );
+    }
     return defaultImpl;
 }
 
-static const Collection<double> GEN_NORM_TABLE() {
+const Collection<double> Similarity::NORM_TABLE() {
     static Collection<double> _NORM_TABLE;
-    LUCENE_RUN_ONCE(
+    if (!_NORM_TABLE) {
         _NORM_TABLE = Collection<double>::newInstance(256);
         for (int32_t i = 0; i < 256; ++i) {
             _NORM_TABLE[i] = SmallDouble::byteToDouble((uint8_t)i);
         }
-    );
+    }
     return _NORM_TABLE;
 }
 
-const Collection<double> Similarity::NORM_TABLE = GEN_NORM_TABLE();
-
 double Similarity::decodeNorm(uint8_t b) {
-    return NORM_TABLE[b & 0xff];  // & 0xff maps negative bytes to positive above 127
+    return NORM_TABLE()[b & 0xff];  // & 0xff maps negative bytes to positive above 127
 }
 
-const Collection<double>& Similarity::getNormDecoder() {
-    return NORM_TABLE;
+const Collection<double> Similarity::getNormDecoder() {
+    return NORM_TABLE();
 }
 
 double Similarity::computeNorm(const String& fieldName, const FieldInvertStatePtr& state) {

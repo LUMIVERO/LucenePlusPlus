@@ -10,10 +10,8 @@
 #include "PriorityQueue.h"
 
 namespace Lucene {
-// raw pointer 
-typedef PhrasePositions* PhrasePositionsStar;
 
-class PhraseQueue : public PriorityQueue<PhrasePositionsStar> {
+class PhraseQueue : public PriorityQueue<PhrasePositionsPtr> {
 public:
     PhraseQueue(int32_t size);
     virtual ~PhraseQueue();
@@ -21,8 +19,7 @@ public:
     LUCENE_CLASS(PhraseQueue);
 
 protected:
-    virtual bool lessThan(const PhrasePositionsStar& first, const PhrasePositionsStar& second);
-
+    virtual bool lessThan(const PhrasePositionsPtr& first, const PhrasePositionsPtr& second);
 };
 
 }

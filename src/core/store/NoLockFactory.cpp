@@ -15,20 +15,20 @@ NoLockFactory::~NoLockFactory() {
 
 NoLockFactoryPtr NoLockFactory::getNoLockFactory() {
     static NoLockFactoryPtr singleton;
-    LUCENE_RUN_ONCE(
+    if (!singleton) {
         singleton = newLucene<NoLockFactory>();
         CycleCheck::addStatic(singleton);
-    );
+    }
     return singleton;
 }
 
 NoLockPtr NoLockFactory::getSingletonLock() {
     // Single instance returned whenever makeLock is called.
     static NoLockPtr singletonLock;
-    LUCENE_RUN_ONCE(
+    if (!singletonLock) {
         singletonLock = newLucene<NoLock>();
         CycleCheck::addStatic(singletonLock);
-    );
+    }
     return singletonLock;
 }
 

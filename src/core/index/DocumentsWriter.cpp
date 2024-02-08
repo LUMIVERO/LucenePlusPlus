@@ -159,10 +159,10 @@ PerDocBufferPtr DocumentsWriter::newPerDocBuffer() {
 
 IndexingChainPtr DocumentsWriter::getDefaultIndexingChain() {
     static DefaultIndexingChainPtr defaultIndexingChain;
-    LUCENE_RUN_ONCE(
+    if (!defaultIndexingChain) {
         defaultIndexingChain = newLucene<DefaultIndexingChain>();
         CycleCheck::addStatic(defaultIndexingChain);
-    );
+    }
     return defaultIndexingChain;
 }
 

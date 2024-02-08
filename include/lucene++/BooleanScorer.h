@@ -27,13 +27,12 @@ namespace Lucene {
 /// the last, then there's a hit.  When some terms are required and some terms are optional, the conjunction can
 /// be evaluated first, then the optional terms can all skip to the match and be added to the score. Thus the
 /// conjunction can reduce the number of priority queue updates for the optional terms.
-class LPPAPI BooleanScorer : public Scorer {
+class BooleanScorer : public Scorer {
 public:
     BooleanScorer(const SimilarityPtr& similarity, int32_t minNrShouldMatch, Collection<ScorerPtr> optionalScorers, Collection<ScorerPtr> prohibitedScorers);
     virtual ~BooleanScorer();
 
     LUCENE_CLASS(BooleanScorer);
-    
 
 protected:
     SubScorerPtr scorers;
@@ -46,7 +45,6 @@ protected:
     int32_t minNrShouldMatch;
     int32_t end;
     BucketPtr current;
-    Bucket* __current = nullptr;
     int32_t doc;
 
 protected:
@@ -60,7 +58,6 @@ public:
     virtual double score();
     virtual void score(const CollectorPtr& collector);
     virtual String toString();
-
 };
 
 class BooleanScorerCollector : public Collector {
@@ -72,10 +69,8 @@ public:
 
 protected:
     BucketTableWeakPtr _bucketTable;
-    BucketTable* __bucketTable = nullptr;
     int32_t mask;
     ScorerWeakPtr _scorer;
-    Scorer* __scorer = nullptr;
 
 public:
     virtual void collect(int32_t doc);
@@ -92,13 +87,7 @@ public:
     BucketScorer();
     virtual ~BucketScorer();
 
-    
-    int32_t freq;
     LUCENE_CLASS(BucketScorer);
-    float termFreq(){
-        return freq;
-    }
-
 
 public:
     double _score;
@@ -124,7 +113,6 @@ public:
     int32_t bits; // used for bool constraints
     int32_t coord; // count of terms in score
     BucketWeakPtr _next; // next valid bucket
-    Bucket* __next = nullptr; // next valid bucket
 };
 
 /// A simple hash table of document scores within a range.
@@ -141,7 +129,6 @@ public:
 
     Collection<BucketPtr> buckets;
     BucketPtr first; // head of valid list
-    Bucket* __first = nullptr; // head of valid list
 
 public:
     CollectorPtr newCollector(int32_t mask);

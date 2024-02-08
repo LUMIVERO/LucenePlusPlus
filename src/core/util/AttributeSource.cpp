@@ -22,12 +22,10 @@ AttributePtr AttributeFactory::createAttributeInstance(const String& className) 
 
 AttributeFactoryPtr AttributeFactory::DEFAULT_ATTRIBUTE_FACTORY() {
     static AttributeFactoryPtr _DEFAULT_ATTRIBUTE_FACTORY;
-
-    LUCENE_RUN_ONCE(
+    if (!_DEFAULT_ATTRIBUTE_FACTORY) {
         _DEFAULT_ATTRIBUTE_FACTORY = newLucene<DefaultAttributeFactory>();
         CycleCheck::addStatic(_DEFAULT_ATTRIBUTE_FACTORY);
-    );
-    
+    }
     return _DEFAULT_ATTRIBUTE_FACTORY;
 }
 
