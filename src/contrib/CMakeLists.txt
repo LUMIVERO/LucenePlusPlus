@@ -101,3 +101,7 @@ install(
   FILES ${contrib_headers}
   DESTINATION "include/lucene++"
   COMPONENT development-contrib)
+install(
+  DIRECTORY "include/kuromoji"
+  DESTINATION "include/lucene++"
+  COMPONENT development-contrib)
