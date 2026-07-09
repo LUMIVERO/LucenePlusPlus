@@ -128,12 +128,12 @@ String joinPath(const String& path, const String& file) {
 }
 
 String extractPath(const String& path) {
-    boost::filesystem::wpath parentPath(path.c_str());
+    boost::filesystem::path parentPath(path.c_str());
     return parentPath.parent_path().wstring().c_str();
 }
 
 String extractFile(const String& path) {
-    boost::filesystem::wpath fileName(path.c_str());
+    boost::filesystem::path fileName(path.c_str());
     return fileName.filename().wstring().c_str();
 }
 
