@@ -7,7 +7,6 @@ find_package(Boost COMPONENTS
   filesystem
   iostreams
   regex
-  system
   thread
   serialization
   REQUIRED
@@ -21,7 +20,6 @@ set(lucene_boost_libs
   ${Boost_FILESYSTEM_LIBRARIES}
   ${Boost_IOSTREAMS_LIBRARIES}
   ${Boost_REGEX_LIBRARIES}
-  ${Boost_SYSTEM_LIBRARIES}
   ${Boost_THREAD_LIBRARIES}
   ${Boost_SERIALIZATION_LIBRARIES}
 )
