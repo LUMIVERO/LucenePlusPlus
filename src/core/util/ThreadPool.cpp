@@ -15,9 +15,9 @@ Future::~Future() {
 const int32_t ThreadPool::THREADPOOL_SIZE = 5;
 
 ThreadPool::ThreadPool() {
-    work.reset(new boost::asio::io_service::work(io_service));
+    work.reset(new boost::asio::executor_work_guard<boost::asio::io_context::executor_type>(io_service.get_executor()));
     for (int32_t i = 0; i < THREADPOOL_SIZE; ++i) {
-        threadGroup.create_thread(boost::bind(&boost::asio::io_service::run, &io_service));
+        threadGroup.create_thread(boost::bind(&boost::asio::io_context::run, &io_service));
     }
 }
 
