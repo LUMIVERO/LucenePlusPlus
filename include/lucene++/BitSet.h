@@ -22,6 +22,9 @@ public:
 protected:
     typedef boost::dynamic_bitset<uint64_t> bitset_type;
     bitset_type bitSet;
+    // Scratch buffer backing getBits(); refreshed from bitSet on each call so a
+    // raw block pointer can be exposed without reaching into dynamic_bitset internals.
+    std::vector<uint64_t> blockCache;
 
 public:
     const uint64_t* getBits();

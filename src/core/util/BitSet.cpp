@@ -17,7 +17,12 @@ BitSet::~BitSet() {
 }
 
 const uint64_t* BitSet::getBits() {
-    return bitSet.empty() ? NULL : static_cast<const uint64_t*>(&bitSet.m_bits[0]);
+    if (bitSet.empty()) {
+        return NULL;
+    }
+    blockCache.resize(bitSet.num_blocks());
+    boost::to_block_range(bitSet, blockCache.begin());
+    return blockCache.data();
 }
 
 void BitSet::clear() {
@@ -151,46 +156,37 @@ int32_t BitSet::nextSetBit(uint32_t fromIndex) const {
 }
 
 void BitSet::_and(const BitSetPtr& set) {
-    bitset_type::size_type minBlocks = std::min(bitSet.num_blocks(), set->bitSet.num_blocks());
-    for (bitset_type::size_type i = 0; i < minBlocks; ++i) {
-        bitSet.m_bits[i] &= set->bitSet.m_bits[i];
-    }
-    if (bitSet.num_blocks() > minBlocks) {
-        std::fill(bitSet.m_bits.begin() + minBlocks, bitSet.m_bits.end(), bitset_type::block_type(0));
-    }
+    // this = this AND set, keeping this's size (bits beyond set's range become 0).
+    bitset_type other(set->bitSet);
+    other.resize(bitSet.size());
+    bitSet &= other;
 }
 
 void BitSet::_or(const BitSetPtr& set) {
-    bitset_type::size_type minBlocks = std::min(bitSet.num_blocks(), set->bitSet.num_blocks());
+    // this = this OR set, growing this to the larger of the two sizes.
     if (set->bitSet.size() > bitSet.size()) {
         resize(set->bitSet.size());
     }
-    for (bitset_type::size_type i = 0; i < minBlocks; ++i) {
-        bitSet.m_bits[i] |= set->bitSet.m_bits[i];
-    }
-    if (bitSet.num_blocks() > minBlocks) {
-        std::copy(set->bitSet.m_bits.begin() + minBlocks, set->bitSet.m_bits.end(), bitSet.m_bits.begin() + minBlocks);
-    }
+    bitset_type other(set->bitSet);
+    other.resize(bitSet.size());
+    bitSet |= other;
 }
 
 void BitSet::_xor(const BitSetPtr& set) {
-    bitset_type::size_type minBlocks = std::min(bitSet.num_blocks(), set->bitSet.num_blocks());
+    // this = this XOR set, growing this to the larger of the two sizes.
     if (set->bitSet.size() > bitSet.size()) {
         resize(set->bitSet.size());
     }
-    for (bitset_type::size_type i = 0; i < minBlocks; ++i) {
-        bitSet.m_bits[i] ^= set->bitSet.m_bits[i];
-    }
-    if (bitSet.num_blocks() > minBlocks) {
-        std::copy(set->bitSet.m_bits.begin() + minBlocks, set->bitSet.m_bits.end(), bitSet.m_bits.begin() + minBlocks);
-    }
+    bitset_type other(set->bitSet);
+    other.resize(bitSet.size());
+    bitSet ^= other;
 }
 
 void BitSet::andNot(const BitSetPtr& set) {
-    bitset_type::size_type minBlocks = std::min(bitSet.num_blocks(), set->bitSet.num_blocks());
-    for (bitset_type::size_type i = 0; i < minBlocks; ++i) {
-        bitSet.m_bits[i] &= ~set->bitSet.m_bits[i];
-    }
+    // this = this AND NOT set, keeping this's size.
+    bitset_type other(set->bitSet);
+    other.resize(bitSet.size());
+    bitSet -= other;
 }
 
 bool BitSet::intersectsBitSet(const BitSetPtr& set) const {
@@ -198,20 +194,13 @@ bool BitSet::intersectsBitSet(const BitSetPtr& set) const {
 }
 
 uint32_t BitSet::cardinality() {
-    return bitSet.num_blocks() == 0 ? 0 : (uint32_t)BitUtil::pop_array((int64_t*)getBits(), 0, bitSet.num_blocks());
+    return (uint32_t)bitSet.count();
 }
 
 void BitSet::resize(uint32_t size) {
-    bitset_type::size_type old_num_blocks = bitSet.num_blocks();
-    bitset_type::size_type required_blocks = bitSet.calc_num_blocks(size);
-    if (required_blocks != old_num_blocks) {
-        bitSet.m_bits.resize(required_blocks, bitset_type::block_type(0));
-    }
-    bitSet.m_num_bits = size;
-    uint64_t extra_bits = static_cast<uint64_t>(bitSet.size() % bitSet.bits_per_block);
-    if (extra_bits != 0) {
-        bitSet.m_bits.back() &= ~(~static_cast<bitset_type::block_type>(0) << extra_bits);
-    }
+    // dynamic_bitset::resize allocates the required blocks, zero-fills any new
+    // bits and masks the unused bits in the final block.
+    bitSet.resize(size);
 }
 
 bool BitSet::equals(const LuceneObjectPtr& other) {
@@ -222,21 +211,15 @@ bool BitSet::equals(const LuceneObjectPtr& other) {
     if (!otherBitSet) {
         return false;
     }
-    BitSetPtr first = bitSet.num_blocks() < otherBitSet->bitSet.num_blocks() ? otherBitSet : shared_from_this();
-    BitSetPtr second = bitSet.num_blocks() < otherBitSet->bitSet.num_blocks() ? shared_from_this() : otherBitSet;
-    bitset_type::size_type firstLength = first->bitSet.num_blocks();
-    bitset_type::size_type secondLength = second->bitSet.num_blocks();
-    for (bitset_type::size_type i = secondLength; i < firstLength; ++i) {
-        if (first->bitSet.m_bits[i] != 0) {
-            return false;
-        }
-    }
-    for (bitset_type::size_type i = 0; i < secondLength; ++i) {
-        if (first->bitSet.m_bits[i] != second->bitSet.m_bits[i]) {
-            return false;
-        }
-    }
-    return true;
+    // Two bit sets are equal if they have the same set bits, even when their
+    // sizes differ (the extra bits of the larger must all be zero). Normalise
+    // both to the larger size (zero-padded) and compare.
+    bitset_type a(bitSet);
+    bitset_type b(otherBitSet->bitSet);
+    bitset_type::size_type maxSize = std::max(a.size(), b.size());
+    a.resize(maxSize);
+    b.resize(maxSize);
+    return a == b;
 }
 
 int32_t BitSet::hashCode() {
@@ -244,10 +227,13 @@ int32_t BitSet::hashCode() {
     // This effectively truncates trailing zeros without an explicit check.
     int64_t hash = 0;
     uint32_t maxSize = bitSet.num_blocks();
-    const uint64_t* bits = getBits();
-    for (uint32_t bit = 0; bit < maxSize; ++bit) {
-        hash ^= bits[bit];
-        hash = (hash << 1) | (hash >> 63); // rotate left
+    if (maxSize > 0) {
+        std::vector<uint64_t> blocks(maxSize);
+        boost::to_block_range(bitSet, blocks.begin());
+        for (uint32_t bit = 0; bit < maxSize; ++bit) {
+            hash ^= blocks[bit];
+            hash = (hash << 1) | (hash >> 63); // rotate left
+        }
     }
     // Fold leftmost bits into right and add a constant to prevent empty sets from
     // returning 0, which is too common.
