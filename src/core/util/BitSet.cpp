@@ -16,13 +16,12 @@ BitSet::BitSet(uint32_t size) : bitSet(size) {
 BitSet::~BitSet() {
 }
 
-const uint64_t* BitSet::getBits() {
-    if (bitSet.empty()) {
-        return NULL;
+std::vector<uint64_t> BitSet::getBits() {
+    std::vector<uint64_t> blocks(bitSet.num_blocks());
+    if (!blocks.empty()) {
+        boost::to_block_range(bitSet, blocks.begin());
     }
-    blockCache.resize(bitSet.num_blocks());
-    boost::to_block_range(bitSet, blockCache.begin());
-    return blockCache.data();
+    return blocks;
 }
 
 void BitSet::clear() {
@@ -157,6 +156,12 @@ int32_t BitSet::nextSetBit(uint32_t fromIndex) const {
 
 void BitSet::_and(const BitSetPtr& set) {
     // this = this AND set, keeping this's size (bits beyond set's range become 0).
+    // Fast path: equal sizes (the common case) operate in place with no temporary;
+    // dynamic_bitset's operator&= requires matching sizes, so only copy/resize when they differ.
+    if (bitSet.size() == set->bitSet.size()) {
+        bitSet &= set->bitSet;
+        return;
+    }
     bitset_type other(set->bitSet);
     other.resize(bitSet.size());
     bitSet &= other;
@@ -166,6 +171,10 @@ void BitSet::_or(const BitSetPtr& set) {
     // this = this OR set, growing this to the larger of the two sizes.
     if (set->bitSet.size() > bitSet.size()) {
         resize(set->bitSet.size());
+    }
+    if (bitSet.size() == set->bitSet.size()) {
+        bitSet |= set->bitSet;
+        return;
     }
     bitset_type other(set->bitSet);
     other.resize(bitSet.size());
@@ -177,6 +186,10 @@ void BitSet::_xor(const BitSetPtr& set) {
     if (set->bitSet.size() > bitSet.size()) {
         resize(set->bitSet.size());
     }
+    if (bitSet.size() == set->bitSet.size()) {
+        bitSet ^= set->bitSet;
+        return;
+    }
     bitset_type other(set->bitSet);
     other.resize(bitSet.size());
     bitSet ^= other;
@@ -184,6 +197,10 @@ void BitSet::_xor(const BitSetPtr& set) {
 
 void BitSet::andNot(const BitSetPtr& set) {
     // this = this AND NOT set, keeping this's size.
+    if (bitSet.size() == set->bitSet.size()) {
+        bitSet -= set->bitSet;
+        return;
+    }
     bitset_type other(set->bitSet);
     other.resize(bitSet.size());
     bitSet -= other;

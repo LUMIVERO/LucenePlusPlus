@@ -8,6 +8,8 @@
 #define BITSET_H
 
 #include <boost/dynamic_bitset.hpp>
+#include <cstdint>
+#include <vector>
 #include "LuceneObject.h"
 
 namespace Lucene {
@@ -22,12 +24,12 @@ public:
 protected:
     typedef boost::dynamic_bitset<uint64_t> bitset_type;
     bitset_type bitSet;
-    // Scratch buffer backing getBits(); refreshed from bitSet on each call so a
-    // raw block pointer can be exposed without reaching into dynamic_bitset internals.
-    std::vector<uint64_t> blockCache;
 
 public:
-    const uint64_t* getBits();
+    /// Returns a copy of the underlying 64-bit blocks (least-significant block first).
+    /// Returned by value so the caller owns the storage: unlike a pointer into a shared
+    /// scratch buffer, this is safe to hold and safe to call concurrently for reads.
+    std::vector<uint64_t> getBits();
     void clear();
     void clear(uint32_t bitIndex);
     void fastClear(uint32_t bitIndex);
